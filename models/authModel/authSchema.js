@@ -13,6 +13,11 @@ email : {
 password : {
     type : String,
     required:true
+},
+accountType: {
+type:String,
+required : true,
+enum : ["tenant", "landlord"]
 }
 },{ timestamps: true })
 
