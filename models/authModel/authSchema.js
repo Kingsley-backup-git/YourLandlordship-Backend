@@ -16,7 +16,6 @@ password : {
 },
 accountType: {
 type:String,
-required : true,
 enum : ["tenant", "landlord"]
 }
 },{ timestamps: true })
