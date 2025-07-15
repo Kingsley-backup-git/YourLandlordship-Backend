@@ -10,7 +10,7 @@ const app = express()
 app.use(express.json())
 app.use(cookieParser());
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: "https://landlordship-auth.vercel.app",
   credentials: true 
 }));
 app.use("/api/auth", authRoute)
