@@ -3,7 +3,7 @@ require("dotenv").config
 const sendEmail = async({email, otp}) => {
     try {
  const mailOptions = {
-        from : process.env.GMAIL_USER,
+        from : process.env.GMAIL,
         to: email,
         subject: "OTP Code",
         text : `This is your One Time Pass ${otp}`

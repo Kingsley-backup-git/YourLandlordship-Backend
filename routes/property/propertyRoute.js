@@ -3,6 +3,7 @@ const router = express.Router()
 const app = express()
 const requireAuth = require("../../middleware/middleware") 
 const {createProperty} = require("../../controllers/property/createProperty")
+const {getAllProperty, paginatedProperties} = require("../../controllers/property/getProperty")
 const multer  = require('multer')
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -15,6 +16,8 @@ const storage = multer.diskStorage({
   })
 const upload = multer({ storage})
 
-app.use(requireAuth)
-router.post("/create", upload.array("attachments"), createProperty)
+// app.use(requireAuth)
+router.post("/create",requireAuth, upload.array("attachments"), createProperty)
+router.get("/all", requireAuth, getAllProperty)
+router.get("/search",requireAuth, paginatedProperties)
 module.exports = router

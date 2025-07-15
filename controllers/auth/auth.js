@@ -1,4 +1,4 @@
-
+require("dotenv").config()
 const AuthCollection = require("../../models/authModel/authSchema")
 const OtpCollection = require("../../models/authModel/otpSchema")
 const {generateOtp} = require("../../utils/function")
@@ -10,12 +10,12 @@ const token =  jwt.sign({id}, process.env.REFRESHTOKEN_SECRET, {expiresIn: "7d"}
 return token
 }
 const generateAccessToken = (id)=> {
-const token =  jwt.sign({id}, process.env.ACCESSTOKEN_SECRET, {expiresIn: "15m"})
+const token =  jwt.sign({id}, process.env.ACCESSTOKEN_SECRET, {expiresIn: "30m"})
 return token
 }
 
 const generateResetToken = (id)=> {
-const token =  jwt.sign({id}, process.env.RESET_SECRET, {expiresIn: "15m"})
+const token =  jwt.sign({id}, process.env.RESET_SECRET, {expiresIn: "30m"})
 return token
 }
 const SignUpHandler = async(req, res)=> {
@@ -33,7 +33,7 @@ const sanitizedUser = {
 res.cookie('refreshToken', refreshToken, {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: 'Strict',
+sameSite: process.env.NODE_ENV === 'production' ? 'Strict' : 'Lax',
   maxAge: 7 * 24 * 60 * 60 * 1000, 
 });
 res.status(201).json({ user: sanitizedUser, accessToken });
@@ -58,10 +58,11 @@ const sanitizedUser = {
 res.cookie('refreshToken', refreshToken, {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: 'Strict',
+sameSite: process.env.NODE_ENV === 'production' ? 'Strict' : 'Lax',
   maxAge: 7 * 24 * 60 * 60 * 1000, 
 });
 res.status(200).json({ user: sanitizedUser, accessToken });
+
 
 } catch(error) {
 res.status(400).json({error : error?.message})
@@ -156,10 +157,36 @@ return res.status(500).json({error : "Request Failed"})
 
 }
 
+const RefreshTokenHandler = async(req,res)=> {
+
+  const refreshToken = req.cookies.refreshToken
+  console.log(refreshToken)
+try {
+ if(!refreshToken) {
+return res.status(401).json({error : "No Token found"})
+
+  }
+
+  const decodedToken = jwt.verify(refreshToken,  process.env.REFRESHTOKEN_SECRET)
+
+  if(decodedToken) {
+     const accessToken = await generateAccessToken(decodedToken.id)
+ 
+
+ res.status(200).json({accessToken})
+ 
+  }
+} catch (error) {
+ res.status(401).json({ message: 'Invalid or expired token'})
+}
+ 
+}
+
 module.exports = {
     SignUpHandler,
     LoginHandler,
     ForgotPasswordHandler,
     ValidateOtpHandler,
-    ChangePasswordHandler
+    ChangePasswordHandler,
+    RefreshTokenHandler
 }
