@@ -32,8 +32,8 @@ const sanitizedUser = {
 };
 res.cookie('refreshToken', refreshToken, {
   httpOnly: false,
-  secure: process.env.NODE_ENV === 'production',
-sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+  secure: true,
+sameSite: 'None',
   maxAge: 7 * 24 * 60 * 60 * 1000, 
 });
 res.status(201).json({ user: sanitizedUser, accessToken });
@@ -57,8 +57,8 @@ const sanitizedUser = {
 };
 res.cookie('refreshToken', refreshToken, {
   httpOnly: false,
-  secure: process.env.NODE_ENV === 'production',
-sameSite: process.env.NODE_ENV === 'production' ?  'None': 'Lax',
+  secure: true,
+sameSite: 'None',
   maxAge: 7 * 24 * 60 * 60 * 1000, 
 });
 res.status(200).json({ user: sanitizedUser, accessToken });
