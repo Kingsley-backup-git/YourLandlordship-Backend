@@ -173,7 +173,8 @@ return res.status(401).json({error : "No Token found"})
      const accessToken = await generateAccessToken(decodedToken.id)
  
 
- res.status(200).json({accessToken})
+ res.status(200).json({data : {
+  accessToken}})
  
   }
 } catch (error) {
