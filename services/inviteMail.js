@@ -12,7 +12,7 @@ const sendEmail = async({email, token, landlordEmail}) => {
         <p>You have been invited to join the property portal by your landlord.</p>
         <p>To accept the invitation and access your tenant dashboard, please click the link below:</p>
         <p>
-          👉 <a href="http://localhost:3000/invite/${token}">Join Now</a>
+          👉 https://landlordship-auth.vercel.app/invite/${token}
         </p>
         <p>If you did not expect this invitation, you can safely ignore this message.</p>
         <br />
