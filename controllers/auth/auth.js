@@ -1,30 +1,39 @@
 require("dotenv").config()
 const AuthCollection = require("../../models/authModel/authSchema")
 const OtpCollection = require("../../models/authModel/otpSchema")
+const TenantCollection = require("../../models/tenantModel/tenant")
 const {generateOtp} = require("../../utils/function")
 const {sendEmail} = require("../../services/mailService")
 
 const jwt = require("jsonwebtoken")
 const generateRefreshToken =  (id)=> {
+// eslint-disable-next-line no-undef
 const token =  jwt.sign({id}, process.env.REFRESHTOKEN_SECRET, {expiresIn: "7d"})
 return token
 }
 const generateAccessToken = (id)=> {
+// eslint-disable-next-line no-undef
 const token =  jwt.sign({id}, process.env.ACCESSTOKEN_SECRET, {expiresIn: "30m"})
 return token
 }
 
 const generateResetToken = (id)=> {
+// eslint-disable-next-line no-undef
 const token =  jwt.sign({id}, process.env.RESET_SECRET, {expiresIn: "30m"})
 return token
 }
 const SignUpHandler = async(req, res)=> {
 const {email, password} = req.body
 try {
-   
+   const tenant = await TenantCollection.findOne({email})
 const user =await AuthCollection.signup(email, password)
  const accessToken = await generateAccessToken(user._id)
  const refreshToken = await generateRefreshToken(user._id)
+ if(tenant && tenant.tenantId === null) {
+ tenant.tenantId = user._id
+ await tenant.save()
+ }
+
 const sanitizedUser = {
   _id: user._id,
   email: user.email,
@@ -36,7 +45,7 @@ res.cookie('refreshToken', refreshToken, {
 sameSite: 'None',
   maxAge: 7 * 24 * 60 * 60 * 1000, 
 });
-res.status(201).json({ user: sanitizedUser, accessToken });
+res.status(201).json({ user: sanitizedUser, accessToken, tenant });
 
 
 } catch(error) {
@@ -47,9 +56,16 @@ res.status(400).json({error : error?.message})
 const LoginHandler = async(req, res)=> {
 const {email, password} = req.body
 try {
+ 
+  const tenant = await TenantCollection.findOne({email})
 const user =await AuthCollection.login(email, password)
  const accessToken = await generateAccessToken(user._id)
  const refreshToken = await generateRefreshToken(user._id)
+  if(tenant && tenant.tenantId === null) {
+ tenant.tenantId = user._id
+ await tenant.save()
+ }
+
 const sanitizedUser = {
   _id: user._id,
   email: user.email,
@@ -61,7 +77,7 @@ res.cookie('refreshToken', refreshToken, {
 sameSite: 'None',
   maxAge: 7 * 24 * 60 * 60 * 1000, 
 });
-res.status(200).json({ user: sanitizedUser, accessToken });
+res.status(200).json({ user: sanitizedUser, accessToken, tenant });
 
 
 } catch(error) {
@@ -80,16 +96,16 @@ const user = await AuthCollection.findOne({email})
 if(!user) {
  return res.status(404).json({error : "User not found"})
 }
-const expiresAt = new Date(Date.now() + 10 * 60 * 1000)
+
 const otp =  generateOtp()
 await sendEmail({email, otp})
 
 
 await OtpCollection.deleteMany({email})
 
-const userOtp = await OtpCollection.create({email, otp, expiresAt})
 
 return res.status(200).json({message:"OTP successfully sent"})
+// eslint-disable-next-line no-unused-vars
 } catch(error) {
 return res.status(500).json({error : "failed to send otp"})
 
@@ -125,6 +141,7 @@ await OtpCollection.deleteOne({_id : user._id})
 
 return res.status(200).json({message :  "OTP verified", resetToken})
 
+// eslint-disable-next-line no-unused-vars
 } catch(error) {
 return res.status(500).json({error : "OTP validation failed"})
 
@@ -166,7 +183,7 @@ try {
 return res.status(401).json({error : "No Token found"})
 
   }
-
+// eslint-disable-next-line no-undef
   const decodedToken = jwt.verify(refreshToken,  process.env.REFRESHTOKEN_SECRET)
 
   if(decodedToken) {
@@ -177,6 +194,7 @@ return res.status(401).json({error : "No Token found"})
   accessToken}})
  
   }
+// eslint-disable-next-line no-unused-vars
 } catch (error) {
  res.status(401).json({ message: 'Invalid or expired token'})
 }

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router()
-const app = express()
+
 const requireAuth = require("../../middleware/middleware") 
 const {createProperty} = require("../../controllers/property/createProperty")
 const {getAllProperty, paginatedProperties} = require("../../controllers/property/getProperty")
