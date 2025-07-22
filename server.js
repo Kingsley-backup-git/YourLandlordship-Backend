@@ -10,12 +10,13 @@ const app = express()
 app.use(express.json())
 app.use(cookieParser());
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: "https://landlordship-auth.vercel.app",
   credentials: true 
 }));
 app.use("/api/auth", authRoute)
 app.use("/api/property", propertyRoute)
 app.use("/api/tenant", tenantRoute)
+// eslint-disable-next-line no-undef
 mongoose.connect(process.env.MONGODB_URL).then(()=> {
 app.listen(4000, ()=> {
     console.log("listening on port 4000")
