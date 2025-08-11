@@ -38,7 +38,9 @@ const user =await AuthCollection.signup(email, password)
  }
   
    if (thisProperty && !thisProperty.tenantId.includes(user._id)) {
-      thisProperty.tenantId.push(user?._id);
+     thisProperty.tenantId.push(user?._id);
+     
+       await thisProperty.save()
    }
 
   await thisProperty.save()
