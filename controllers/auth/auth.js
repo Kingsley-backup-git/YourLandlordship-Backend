@@ -43,7 +43,7 @@ const user =await AuthCollection.signup(email, password)
        await thisProperty.save()
    }
 
-  await thisProperty.save()
+
 const sanitizedUser = {
   _id: user._id,
   email: user.email,
