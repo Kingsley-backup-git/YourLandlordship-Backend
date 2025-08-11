@@ -3,6 +3,7 @@ const { default: mongoose } = require("mongoose")
 const authRoute = require("./routes/auth/authRoute")
 const propertyRoute = require("./routes/property/propertyRoute")
 const tenantRoute = require("./routes/tenant/tenant")
+const maintenanceRoute = require("./routes/maintenanceReq/maintenanceReq")
 const cors = require('cors')
 const cookieParser = require('cookie-parser');
 require("dotenv").config()
@@ -10,12 +11,14 @@ const app = express()
 app.use(express.json())
 app.use(cookieParser());
 app.use(cors({
-  origin: "https://landlordship-auth.vercel.app",
+  origin: "https://landlordship-auth.vercel.app/",
   credentials: true 
 }));
 app.use("/api/auth", authRoute)
 app.use("/api/property", propertyRoute)
 app.use("/api/tenant", tenantRoute)
+app.use("/api/maintenance", maintenanceRoute)
+app.use("api/maintenance", maintenanceRoute)
 // eslint-disable-next-line no-undef
 mongoose.connect(process.env.MONGODB_URL).then(()=> {
 app.listen(4000, ()=> {

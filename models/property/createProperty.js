@@ -3,8 +3,7 @@ const PropertySchema = mongoose.Schema
 
 const PropertyModel = new PropertySchema({
 propertyName : {
-    type:String,
-    unique:true
+    type:String
 },
 yearBuilt : Number,
 uniqueId : String,
@@ -24,11 +23,11 @@ propertyType : {
 amenities : [String],
 features : [String],
 attachments : [String],
-tenantId : {
+tenantId : [{
     type:mongoose.Schema.Types.ObjectId,
-    ref : "TenantAssignment",
-    default:null
-}
+    ref : "AuthCollection",
+    default:[]
+}]
 }, {timestamps:true})
 
 module.exports = mongoose.model("PropertyCollection", PropertyModel)

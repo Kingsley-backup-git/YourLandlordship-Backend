@@ -1,5 +1,5 @@
 const validator = require('validator');
-const express =require("express")
+
 const mongoose = require("mongoose")
 const bcrypt = require('bcrypt');
 const Schema = mongoose.Schema
@@ -17,6 +17,10 @@ password : {
 accountType: {
 type:String,
 enum : ["tenant", "landlord"]
+    },
+    isTenant: {
+        type: Boolean,
+        default : false
 }
 },{ timestamps: true })
 

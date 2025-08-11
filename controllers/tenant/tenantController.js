@@ -4,7 +4,7 @@ const { sendEmail } = require("../../services/inviteMail");
 const AuthCollection = require("../../models/authModel/authSchema");
 const TenantAssignment = require("../../models/property/invite");
 const TenantCollection = require("../../models/tenantModel/tenant");
-
+const PropertyCollection = require("../../models/property/createProperty");
 const InviteTenantHandler = async (req, res) => {
   const { email } = req.body;
   const { _id } = req.user;
@@ -140,34 +140,43 @@ const AcceptInviteHandler = async (req, res) => {
       String(IfTenantIsAssigned.landlordId) !== String(assignedTenant.invitee)
     ) {
       return res
-        .status(500)
+        .status(409)
         .json({ error: "email is already assigned a landlord" });
     }
-    // if (IfTenantIsAssigned && IfTenantIsAssigned.landlordId === null) {
-    //    IfTenantIsAssigned.landlordId = assignedTenant.invitee
-    //    IfTenantIsAssigned.save()
 
-    // }
+    const thisProperty = await PropertyCollection.findOne({
+      _id: assignedTenant?.property,
+    });
+
     let newTenant = IfTenantIsAssigned;
     if (!newTenant) {
       newTenant = new TenantCollection({
         email: assignedTenant?.email,
-        propertyIds: [assignedTenant.property],
+        propertyId: assignedTenant.property,
         landlordId: assignedTenant.invitee,
       });
-    } else if (!newTenant.propertyIds.includes(assignedTenant.property)) {
-      newTenant.propertyIds.push(assignedTenant.property);
+      findUser.isTenant = true
+      
+      await findUser.save()
     }
 
-    if (findUser) {
-      newTenant.tenantId = findUser._id;
-    }
+if (findUser) {
+  newTenant.tenantId = findUser._id;
+
+ 
+  if (!Array.isArray(thisProperty.tenantId)) {
+    thisProperty.tenantId = [];
+  }
+
+  if (!thisProperty.tenantId.includes(findUser._id)) {
+    thisProperty.tenantId.push(findUser._id);
+  }
+}
 
     assignedTenant.status = "success";
 
     await assignedTenant.save();
     await newTenant.save();
-   
 
     return res
       .status(200)
@@ -181,13 +190,13 @@ const GetTenantHandler = async (req, res) => {
   const { _id } = req.user;
 
   if (!_id) {
-    return res.status(401).json({ error: "Unauthorized user" });
+    return res.status(401).json({ error: "User not found" });
   }
 
   const tenant = await TenantCollection.findOne({ tenantId: _id })
     .populate("landlordId", "name email")
     .select("email")
-    .populate("propertyIds");
+    .populate("propertyId").populate("tenantId");
 
   if (!tenant) {
     return res.status(200).json({ data: { tenant: null } });
@@ -196,9 +205,25 @@ const GetTenantHandler = async (req, res) => {
   return res.status(200).json({ data: { tenant } });
 };
 
+
+const getAllTenant = async(req,res)=> {
+    const {_id} = req.user
+    if(!_id) {
+        return res.status(401).json({error : "User not found"})
+    }
+    try {
+const tenants = await TenantCollection.find({landlordId : _id}).sort({createdAt : -1})
+return res.status(200).json({data : tenants})
+    } catch(error) {
+      return res.status(500).json({error: error.message})  
+    }
+
+}
+
 module.exports = {
   InviteTenantHandler,
   getInviteHandler,
   AcceptInviteHandler,
   GetTenantHandler,
+  getAllTenant
 };

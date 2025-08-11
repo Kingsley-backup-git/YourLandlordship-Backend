@@ -17,10 +17,10 @@ const TenantSchema = new Schema({
         ref : "AuthCollection",
         default: null
     },
-    propertyIds : [{
+    propertyId : {
         type : mongoose.Schema.Types.ObjectId,
         ref : "PropertyCollection"
-    }]
+    }
 })
 
 module.exports = mongoose.model("TenantCollection", TenantSchema)

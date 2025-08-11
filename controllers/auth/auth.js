@@ -4,7 +4,7 @@ const OtpCollection = require("../../models/authModel/otpSchema")
 const TenantCollection = require("../../models/tenantModel/tenant")
 const {generateOtp} = require("../../utils/function")
 const {sendEmail} = require("../../services/mailService")
-
+const PropertyCollection = require("../../models/property/createProperty")
 const jwt = require("jsonwebtoken")
 const generateRefreshToken =  (id)=> {
 // eslint-disable-next-line no-undef
@@ -25,15 +25,23 @@ return token
 const SignUpHandler = async(req, res)=> {
 const {email, password} = req.body
 try {
-   const tenant = await TenantCollection.findOne({email})
+  const tenant = await TenantCollection.findOne({ email })
+      const thisProperty = await PropertyCollection.findOne({_id : tenant?.propertyId})
 const user =await AuthCollection.signup(email, password)
  const accessToken = await generateAccessToken(user._id)
  const refreshToken = await generateRefreshToken(user._id)
  if(tenant && tenant.tenantId === null) {
- tenant.tenantId = user._id
+   tenant.tenantId = user._id
+    
  await tenant.save()
- }
 
+ }
+  
+   if (thisProperty && !thisProperty.tenantId.includes(user._id)) {
+      thisProperty.tenantId.push(user?._id);
+   }
+
+  await thisProperty.save()
 const sanitizedUser = {
   _id: user._id,
   email: user.email,
@@ -57,14 +65,26 @@ const LoginHandler = async(req, res)=> {
 const {email, password} = req.body
 try {
  
-  const tenant = await TenantCollection.findOne({email})
+  const tenant = await TenantCollection.findOne({ email })
+    const thisProperty = await PropertyCollection.findOne({_id : tenant?.propertyId})
 const user =await AuthCollection.login(email, password)
  const accessToken = await generateAccessToken(user._id)
  const refreshToken = await generateRefreshToken(user._id)
   if(tenant && tenant.tenantId === null) {
- tenant.tenantId = user._id
+    tenant.tenantId = user._id
+     
  await tenant.save()
- }
+
+  }
+   if (thisProperty && !thisProperty.tenantId.includes(user._id)) {
+     thisProperty.tenantId.push(user?._id);
+     
+       await thisProperty.save()
+   }
+
+
+  
+  
 
 const sanitizedUser = {
   _id: user._id,
@@ -104,6 +124,9 @@ await sendEmail({email, otp})
 await OtpCollection.deleteMany({email})
 
 
+  
+  const newOtp = new OtpCollection({ email, otp })
+  await newOtp.save()
 return res.status(200).json({message:"OTP successfully sent"})
 // eslint-disable-next-line no-unused-vars
 } catch(error) {
