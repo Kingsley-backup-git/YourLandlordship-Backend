@@ -155,9 +155,6 @@ const AcceptInviteHandler = async (req, res) => {
         propertyId: assignedTenant.property,
         landlordId: assignedTenant.invitee,
       });
-      findUser.isTenant = true
-      
-      await findUser.save()
     }
 
 if (findUser) {

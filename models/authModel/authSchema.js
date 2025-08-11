@@ -18,10 +18,7 @@ accountType: {
 type:String,
 enum : ["tenant", "landlord"]
     },
-    isTenant: {
-        type: Boolean,
-        default : false
-}
+
 },{ timestamps: true })
 
 AuthSchema.statics.signup = async function(email, password) {
